@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:c="http://www.springframework.org/schema/c"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<!-- 配置流程引擎 -->
+	<bean id="processEngineConfiguration"
+		class="org.activiti.spring.SpringProcessEngineConfiguration">
+		<property name="dataSource" ref="dataSource" />
+		<!-- 容器里面有事务管理器即可 -->
+		<property name="transactionManager" ref="transactionManager" />
+		<!-- 是否自动更新数据库的表结构，Activiti会把预先写好的SQL语句依次执行 -->
+		<property name="databaseSchemaUpdate" value="true" />
+		<!-- 是否启用定时作业/任务 -->
+		<property name="jobExecutorActivate" value="false" />
+	</bean>
+
+	<!-- 创建流程引擎的工厂Bean -->
+	<!-- 工厂Bean、Bean工厂？ -->
+	<!-- FactoryBean是一个工厂，也是一个Bean，为了产生某个类的实例。 -->
+	<!-- BeanFactory是一个容器，产生一堆的Bean，ApplicationContext接口继承了BeanFactory。 -->
+	<bean id="processEngine"
+		class="org.activiti.spring.ProcessEngineFactoryBean">
+		<property name="processEngineConfiguration"
+			ref="processEngineConfiguration" />
+	</bean>
+
+	<!-- 配置Activiti的核心服务，通过引擎的实例来获取即可 -->
+	<!-- 此时把流程引擎的实例，作为工厂来使用，使用factory-bean、factory-method -->
+
+	<!-- 存储服务，负责流程定义管理 -->
+	<bean id="repositoryService" factory-bean="processEngine"
+		factory-method="getRepositoryService" />
+	<!-- 运行时服务，负责启动流程实例、查询流程实例等 -->
+	<bean id="runtimeService" factory-bean="processEngine"
+		factory-method="getRuntimeService" />
+	<!-- 任务服务，负责待办任务的查询、完成待办任务 -->
+	<bean id="taskService" factory-bean="processEngine"
+		factory-method="getTaskService" />
+	<!-- 历史服务，运行时、任务两个服务里面的数据，使用完以后，马上删除，这是为了保证数据量较小、效率较高 -->
+	<!-- 信息化系统不允许删除数据，所以历史服务里面有完整的数据备份，甚至更多的数据 -->
+	<bean id="historyService" factory-bean="processEngine"
+		factory-method="getHistoryService" />
+	<!-- 表单服务，负责处理所有跟表单有关的信息 -->
+	<bean id="formService" factory-bean="processEngine"
+		factory-method="getFormService" />
+	<!-- 流程引擎自身提供的一个用户权限模块，很少使用、几乎不用！因为我们有！ -->
+	<bean id="activitiIdentityService" factory-bean="processEngine"
+		factory-method="getIdentityService" />
+</beans>
+
+
+

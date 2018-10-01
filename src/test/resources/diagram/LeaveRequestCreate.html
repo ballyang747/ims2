@@ -1,0 +1,213 @@
+<!--开始启动请假流程的表单开始-->
+<div class="pull-right">
+	<a href="#" class="btn btn-default" onclick="addRow()">
+		<i class=" icon icon-color  icon-plus"></i>添加
+	</a>
+</div>
+<table class="table table-bordered table-striped table-condensed data-list">
+	  <thead>
+		  <tr>
+			  <th>假期类型</th>
+			  <th>开始时间</th>
+			  <th>结束时间</th>
+			  <th>请假时长</th>
+			  <th>操作</th>                                          
+		  </tr>
+	  </thead>   
+	  <tbody id="leaveRows">
+		<tr>
+			<td>
+				<select id="type" name="details[0].type.code" class="form-control" required="required"/>
+					<option value="">-- 请选择假期类型 --</option>
+				</select>
+			</td>
+			<td class="center">
+				<input name="details[0].startTime" type="text" class="form-control" required="required" readonly="readonly" onchange="return checkLeaveHours(this)"/>
+			</td>
+			<td class="center">
+				<input name="details[0].endTime" type="text" class="form-control" required="required" readonly="readonly" onchange="return checkLeaveHours(this)"/>
+			</td>
+			<td class="center">
+				<input name="details[0].leaveHours" type="text" class="form-control" required="required" readonly="readonly" value="0"/>
+			</td>
+			<td class="center">
+				<a href="#" class="btn btn-danger" onclick="deleteRow($(this).parent().parent())">
+					<i class=" icon-remove icon-white"></i>删除
+				</a>
+			</td>         
+		</tr>
+	  </tbody>
+ </table>
+ <div>
+ 	一共请假 <span id="leaveHoursLabel">0</span> 个小时
+ 	<input id="leaveHours" name="leaveHours" type="hidden" class="form-control" value="0"/>
+ </div>
+<script type="text/javascript">
+$(setDateTimePicker);
+//$(setDatePicker);
+//异步加载请假类型
+$.ajax({
+	url: contextPath + "/vacation/leave/json.jspx",
+	success: function(data){
+		$(data).each(function(){
+			//$("#type").append("<option value='"+this.id+"'>"+this.name+"</option>");
+			
+			//$("<option/>").val(this.id).html(this.name).appendTo("#type");
+			
+			var option = new Option(this.name, this.code);
+			$("#type").append(option);
+		});
+	},
+	error: function(){
+		alert("无法获得请假类型，请查看服务器日志！");
+	}
+});
+
+function addRow()
+{
+	//复制第一行
+	var firstRow = $("#leaveRows tr:first").clone();
+	//清空复制的行里面的数据
+	$("select", firstRow).val("");
+	$("[name$='startTime']", firstRow).val("");
+	$("[name$='endTime']", firstRow).val("");
+	$("[name$='leaveHours']", firstRow).val("");
+	//追加新的行到tbody里面
+	firstRow.appendTo("#leaveRows");
+	
+	setDateTimePicker();
+	//setDatePicker();
+}
+
+function deleteRow(tr){
+	//判断是否为第一行，如果是则不能删除！
+	var rows = $("#leaveRows tr").length;
+	
+	//必须行数大于1才能删除
+	if( rows > 1 ){
+		tr.remove();
+	}
+}
+function checkForm(){
+    var checked = setInputName();
+    return checked;
+}
+//检查并计算请假小时数
+function checkLeaveHours(input){
+	var row = $(input).parent().parent();
+    //结束时间不能比开始时间长
+    var startTime = $("input[name$='startTime']", row).val();
+    var endTime = $("input[name$='endTime']", row).val();
+    if(startTime == null || startTime == ""){
+        //alert("开始时间不能为空，请填写开始时间");
+        return;
+    }
+    if(endTime == null || endTime == ""){
+        //alert("结束时间不能为空，请填写结束时间");
+        return;
+    }
+    var startYear = startTime.substring(0, 4);
+    var startMonth = startTime.substring(5, 7);
+    var startDay = startTime.substring(8, 10);
+    var startHour = startTime.substring(11, 13);
+    var startMin = startTime.substring(14, 16);
+    
+    var endYear = endTime.substring(0, 4);
+    var endMonth = endTime.substring(5, 7);
+    var endDay = endTime.substring(8, 10);
+    var endHour = endTime.substring(11, 13);
+    var endMin = endTime.substring(14, 16);
+
+    var start = new Date(startYear, startMonth, startDay, startHour, startMin);
+    var end = new Date(endYear, endMonth, endDay, endHour, endMin);
+
+    if(start.getTime() >= end.getTime()){
+        //错误，开始时间，必须小于结束时间
+        alert("开始时间必须小于结束时间");
+        return false;
+    }
+    //每天早上9点，到下午6点，是上班时间，在此时间范围内计算请假时长
+    //中午1个小时休息，因此每天的工作时长是：18-9-1 = 8
+
+    //开始那天的下班时间
+    var startDayStart = new Date(startYear, startMonth, startDay, 9, 0);
+    var startDayEnd = new Date(startYear, startMonth, startDay, 18, 0);
+    //计算开始时间和开始那天的下班时间的小时数，如果是负数，当天不计算工作时间
+    var startDayHours = (startDayEnd.getTime() - start.getTime()) / 1000 / 60 / 60;
+    if(startDayHours > 4){
+        startDayHours = startDayHours - 1;
+    }
+    if(startDayHours < 0){
+        startDayHours = 0;
+    }
+    if(startDayHours > 8){
+        startDayHours = 8;
+    }
+    //alert(startDayHours);
+
+    //结束那天的上班时间
+    var endDayStart = new Date(endYear, endMonth, endDay, 9, 0);
+    //结束时间和开始时间算法差不多，只是大于8则直接等于8
+    var endDayHours = (end.getTime() - endDayStart) / 1000 / 60 / 60;
+    if(endDayHours > 4){
+        endDayHours = endDayHours - 1;
+    }
+    
+    if(endDayHours < 0){
+        endDayHours = 0;
+    }
+    if(startYear == endYear && startMonth == endMonth && startDay == endDay){
+    	//如果是同一天，结束时间的小时数为0
+		endDayHours = 0;
+		var time = end.getTime() - startDayStart.getTime();
+		var hours = time / 1000 / 60 / 60;
+	    if(hours > 8){
+	    	hours = 8;
+	    }
+	    //中途休息一个小时
+	    if( hours > 4 )
+	    {
+	    	hours = hours - 1;
+	    }
+	    if(hours < 0){
+	    	hours = 0;
+	    }
+	    $("input[name$='leaveHours']", row).val(hours);
+	}
+    else{
+	    if(endDayHours > 8){
+	        endDayHours = 8;
+	    }
+	    //alert(endDayHours);
+	    //算出开始时间和结束时间之间的天数差
+	    var days = parseInt(((endDayStart.getTime() - 9 * 60 * 60 * 1000 - 1) - startDayEnd.getTime()) / 1000 / 60 / 60 /24);
+	    //这个天数必须是比实际天数-1的，因为不能把当天算在内。当天的时间已经另外算了。
+	    //alert(days);
+	    //天数乘以8，即为中间的小时数
+	    //再把前后两天的小时数加起来，即为全部小时数
+	    var hours = days * 8.0 + startDayHours + endDayHours;
+	    if(days > 0){
+	        hours = hours + endDayHours;
+	    }
+	    if(hours < 0){
+	    	hours = 0;
+	    }
+	    $("input[name$='leaveHours']", row).val(hours);
+    }
+    
+    //计算所有的请假时长
+    //leaveHoursLabel
+    //leaveHours
+    $("#leaveHours").val("0");
+    $("table input[name$='leaveHours']").each(function(){
+    	var val = parseInt($(this).val());
+    	
+    	var leaveHours = parseInt($("#leaveHours").val());
+    	
+    	leaveHours = leaveHours + val;
+    	$("#leaveHoursLabel").text(leaveHours);
+    	$("#leaveHours").val(leaveHours);
+    });
+}
+</script>
+<!--开始启动请假流程的表单结束-->

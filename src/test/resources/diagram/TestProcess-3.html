@@ -1,0 +1,9 @@
+<span id="userName"></span>
+<!-- 不修改，也要通过隐藏域保存值 -->
+<input name="userName" id="input-userName"/>
+<script type="text/javascript">
+$(function(){
+	$("#userName").text(businessData.userName);
+	$("#input-userName").val(businessData.userName);
+});
+</script>

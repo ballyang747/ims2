@@ -1,0 +1,17 @@
+.data-list tbody tr:hover
+{
+	background-color: #cccccc;
+}
+.data-list th
+{
+	text-align: center;
+}
+.data-list td
+{
+	text-align: center;
+}
+	
+.workflow-main
+{
+	overflow: hidden; width: 98%;
+}

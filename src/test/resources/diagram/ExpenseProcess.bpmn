@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="财务流程">
+  <process id="ExpenseProcess" name="报销申请" isExecutable="true">
+    <documentation>这是一个示例的报销申请。需要在spring里面配置employeeService，里面必须有两个方法：&lt;br/&gt;
+&lt;ul&gt;
+    &lt;li&gt;getAccountants() : 找到所有的出纳的用户id连接成字符串，用逗号隔开，作为候选者，其中一个出纳可以领取任务进行处理&lt;/li&gt;
+    &lt;li&gt;getManagerUserId(String userId) : 获取userId对应的员工的直接主管，返回直接主管的userId&lt;/li&gt;
+&lt;/ul&gt;</documentation>
+    <startEvent id="startevent1" name="Start" activiti:initiator="createUserId" activiti:formKey="create.jsp"></startEvent>
+    <userTask id="usertask1" name="直接主管审批" activiti:assignee="${ createUserId }" activiti:formKey="view.jsp">
+      <extensionElements>
+        <activiti:formProperty id="approveAction" name="操作" type="enum">
+          <activiti:value id="同意" name="AGREE"></activiti:value>
+          <activiti:value id="拒绝" name="REFUSE"></activiti:value>
+        </activiti:formProperty>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="toManager" sourceRef="startevent1" targetRef="usertask1"></sequenceFlow>
+    <userTask id="usertask2" name="申请人修改" activiti:assignee="${ createUserId }" activiti:formKey="edit.jsp">
+      <extensionElements>
+        <activiti:formProperty id="approveAction" name="操作" type="enum">
+          <activiti:value id="取消申请" name="CANCEL"></activiti:value>
+          <activiti:value id="重新提交" name="RESUBMIT"></activiti:value>
+        </activiti:formProperty>
+      </extensionElements>
+    </userTask>
+    <userTask id="usertask4" name="出纳划账" activiti:candidateUsers="liqin,ligang,admin" activiti:formKey="view.jsp"></userTask>
+    <exclusiveGateway id="exclusivegateway1" name="Exclusive Gateway"></exclusiveGateway>
+    <sequenceFlow id="flow2" sourceRef="usertask1" targetRef="exclusivegateway1"></sequenceFlow>
+    <sequenceFlow id="refuse" name="拒绝" sourceRef="exclusivegateway1" targetRef="usertask2">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${ approveAction eq 'REFUSE' }]]></conditionExpression>
+    </sequenceFlow>
+    <exclusiveGateway id="exclusivegateway2" name="Exclusive Gateway"></exclusiveGateway>
+    <sequenceFlow id="flow4" sourceRef="usertask2" targetRef="exclusivegateway2"></sequenceFlow>
+    <sequenceFlow id="resubmit" name="重新提交" sourceRef="exclusivegateway2" targetRef="usertask1">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${ approveAction eq 'RESUBMIT' }]]></conditionExpression>
+    </sequenceFlow>
+    <endEvent id="endevent1" name="End"></endEvent>
+    <sequenceFlow id="cancel" name="取消申请" sourceRef="exclusivegateway2" targetRef="endevent1">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${ approveAction eq 'CANCEL' }]]></conditionExpression>
+    </sequenceFlow>
+    <userTask id="usertask6" name="确认到账" activiti:assignee="${ createUserId }" activiti:formKey="view.jsp">
+      <extensionElements>
+        <activiti:formProperty id="approveAction" name="操作" type="enum">
+          <activiti:value id="已经到账" name="AGREE"></activiti:value>
+          <activiti:value id="未到账" name="REFUSE"></activiti:value>
+        </activiti:formProperty>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="transfer" sourceRef="usertask4" targetRef="usertask6"></sequenceFlow>
+    <exclusiveGateway id="exclusivegateway5" name="Exclusive Gateway"></exclusiveGateway>
+    <sequenceFlow id="flow15" sourceRef="usertask6" targetRef="exclusivegateway5"></sequenceFlow>
+    <endEvent id="endevent2" name="End"></endEvent>
+    <sequenceFlow id="confirm" name="已经到账" sourceRef="exclusivegateway5" targetRef="endevent2">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${ approveAction eq 'AGREE' }]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="uncollected" name="没有到账" sourceRef="exclusivegateway5" targetRef="usertask4">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${ approveAction eq 'REFUSE' }]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="agree" name="同意" sourceRef="exclusivegateway1" targetRef="usertask7">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${ approveAction eq 'AGREE' }]]></conditionExpression>
+    </sequenceFlow>
+    <userTask id="usertask7" name="总裁审核">
+      <extensionElements>
+        <activiti:formProperty id="approveAction" name="随便写" type="enum">
+          <activiti:value id="同意" name="AGREE"></activiti:value>
+          <activiti:value id="拒绝" name="REFUSE"></activiti:value>
+        </activiti:formProperty>
+      </extensionElements>
+    </userTask>
+    <exclusiveGateway id="exclusivegateway6" name="Exclusive Gateway"></exclusiveGateway>
+    <sequenceFlow id="flow16" sourceRef="usertask7" targetRef="exclusivegateway6"></sequenceFlow>
+    <sequenceFlow id="flow17" name="同意" sourceRef="exclusivegateway6" targetRef="usertask4">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${ approveAction eq 'AGREE' }]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow18" name="拒绝" sourceRef="exclusivegateway6" targetRef="usertask2">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${ approveAction eq 'REFUSE' } ]]></conditionExpression>
+    </sequenceFlow>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_ExpenseProcess">
+    <bpmndi:BPMNPlane bpmnElement="ExpenseProcess" id="BPMNPlane_ExpenseProcess">
+      <bpmndi:BPMNShape bpmnElement="startevent1" id="BPMNShape_startevent1">
+        <omgdc:Bounds height="35.0" width="35.0" x="390.0" y="60.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="usertask1" id="BPMNShape_usertask1">
+        <omgdc:Bounds height="55.0" width="105.0" x="355.0" y="170.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="usertask2" id="BPMNShape_usertask2">
+        <omgdc:Bounds height="55.0" width="105.0" x="110.0" y="263.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="usertask4" id="BPMNShape_usertask4">
+        <omgdc:Bounds height="55.0" width="105.0" x="355.0" y="510.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="exclusivegateway1" id="BPMNShape_exclusivegateway1">
+        <omgdc:Bounds height="40.0" width="40.0" x="387.0" y="270.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="exclusivegateway2" id="BPMNShape_exclusivegateway2">
+        <omgdc:Bounds height="40.0" width="40.0" x="142.0" y="177.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="endevent1" id="BPMNShape_endevent1">
+        <omgdc:Bounds height="35.0" width="35.0" x="0.0" y="180.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="usertask6" id="BPMNShape_usertask6">
+        <omgdc:Bounds height="55.0" width="105.0" x="355.0" y="630.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="exclusivegateway5" id="BPMNShape_exclusivegateway5">
+        <omgdc:Bounds height="40.0" width="40.0" x="585.0" y="637.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="endevent2" id="BPMNShape_endevent2">
+        <omgdc:Bounds height="35.0" width="35.0" x="695.0" y="640.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="usertask7" id="BPMNShape_usertask7">
+        <omgdc:Bounds height="55.0" width="105.0" x="355.0" y="400.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="exclusivegateway6" id="BPMNShape_exclusivegateway6">
+        <omgdc:Bounds height="40.0" width="40.0" x="142.0" y="407.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="toManager" id="BPMNEdge_toManager">
+        <omgdi:waypoint x="407.0" y="95.0"></omgdi:waypoint>
+        <omgdi:waypoint x="407.0" y="170.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow2" id="BPMNEdge_flow2">
+        <omgdi:waypoint x="407.0" y="225.0"></omgdi:waypoint>
+        <omgdi:waypoint x="407.0" y="270.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="refuse" id="BPMNEdge_refuse">
+        <omgdi:waypoint x="387.0" y="290.0"></omgdi:waypoint>
+        <omgdi:waypoint x="215.0" y="290.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="17.0" width="22.0" x="251.0" y="294.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow4" id="BPMNEdge_flow4">
+        <omgdi:waypoint x="162.0" y="263.0"></omgdi:waypoint>
+        <omgdi:waypoint x="162.0" y="217.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="resubmit" id="BPMNEdge_resubmit">
+        <omgdi:waypoint x="182.0" y="197.0"></omgdi:waypoint>
+        <omgdi:waypoint x="355.0" y="197.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="17.0" width="44.0" x="219.0" y="197.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="cancel" id="BPMNEdge_cancel">
+        <omgdi:waypoint x="142.0" y="197.0"></omgdi:waypoint>
+        <omgdi:waypoint x="35.0" y="197.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="17.0" width="44.0" x="44.0" y="201.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="transfer" id="BPMNEdge_transfer">
+        <omgdi:waypoint x="407.0" y="565.0"></omgdi:waypoint>
+        <omgdi:waypoint x="407.0" y="630.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow15" id="BPMNEdge_flow15">
+        <omgdi:waypoint x="460.0" y="657.0"></omgdi:waypoint>
+        <omgdi:waypoint x="585.0" y="657.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="confirm" id="BPMNEdge_confirm">
+        <omgdi:waypoint x="625.0" y="657.0"></omgdi:waypoint>
+        <omgdi:waypoint x="695.0" y="657.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="17.0" width="44.0" x="635.0" y="657.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="uncollected" id="BPMNEdge_uncollected">
+        <omgdi:waypoint x="605.0" y="637.0"></omgdi:waypoint>
+        <omgdi:waypoint x="604.0" y="537.0"></omgdi:waypoint>
+        <omgdi:waypoint x="460.0" y="537.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="17.0" width="44.0" x="606.0" y="559.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="agree" id="BPMNEdge_agree">
+        <omgdi:waypoint x="407.0" y="310.0"></omgdi:waypoint>
+        <omgdi:waypoint x="407.0" y="400.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="17.0" width="22.0" x="416.0" y="359.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow16" id="BPMNEdge_flow16">
+        <omgdi:waypoint x="355.0" y="427.0"></omgdi:waypoint>
+        <omgdi:waypoint x="182.0" y="427.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow17" id="BPMNEdge_flow17">
+        <omgdi:waypoint x="162.0" y="447.0"></omgdi:waypoint>
+        <omgdi:waypoint x="162.0" y="537.0"></omgdi:waypoint>
+        <omgdi:waypoint x="355.0" y="537.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="17.0" width="100.0" x="182.0" y="493.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow18" id="BPMNEdge_flow18">
+        <omgdi:waypoint x="162.0" y="407.0"></omgdi:waypoint>
+        <omgdi:waypoint x="162.0" y="318.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="17.0" width="100.0" x="172.0" y="361.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

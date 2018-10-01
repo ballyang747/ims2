@@ -1,0 +1,262 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<!-- 项目对象模型的版本号 -->
+	<modelVersion>4.0.0</modelVersion>
+	<!-- 公司或组织名 -->
+	<groupId>org.kingson</groupId>
+	<!-- 项目名 -->
+	<artifactId>Imsn</artifactId>
+	<!-- 项目最终打成war -->
+	<packaging>war</packaging>
+	<!-- 版本号 -->
+	<version>0.0.1-SNAPSHOT</version>
+	<!-- 项目说明名称 -->
+	<name>oa Maven Webapp项目</name>
+	<!-- 公司的URL -->
+	<url>http://www.xxx.org</url>
+
+	<!-- 配置的全局的属性 -->
+	<properties>
+		<junit.version>4.11</junit.version>
+		<jsp.api.version>7.0.47</jsp.api.version>
+		<jstl.version>1.2</jstl.version>
+		<spring.version>5.0.6.RELEASE</spring.version>
+		<aspectjweaver.version>1.8.5</aspectjweaver.version>
+		<hibernate.version>5.2.17.Final</hibernate.version>
+		<slf4j.version>1.7.12</slf4j.version>
+		<mysql.version>5.1.35</mysql.version>
+		<log4j.version>1.2.17</log4j.version>
+		<mail.version>1.4.7</mail.version>
+		<json.version>2.4</json.version>
+	</properties>
+
+
+	<!-- 配置项目需要哪些jar包 -->
+	<dependencies>
+		<!-- junit -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>${junit.version}</version>
+			<!-- 该jar包保留到测试 -->
+			<scope>test</scope>
+		</dependency>
+		<!-- jsp-api、servlet-api、el -->
+		<dependency>
+			<groupId>org.apache.tomcat</groupId>
+			<artifactId>tomcat-jsp-api</artifactId>
+			<version>${jsp.api.version}</version>
+			<!-- 该jar包最终由Web容器提供 -->
+			<scope>provided</scope>
+		</dependency>
+		<!-- jstl -->
+		<dependency>
+			<groupId>jstl</groupId>
+			<artifactId>jstl</artifactId>
+			<version>${jstl.version}</version>
+		</dependency>
+		<!-- Spring4 -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-web</artifactId>
+			<version>${spring.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring-jcl</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-orm</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<!-- SpringMVC -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-webmvc</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<!-- aspectjweaver -->
+		<dependency>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjweaver</artifactId>
+			<version>${aspectjweaver.version}</version>
+		</dependency>
+		<!-- hibernate -->
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-core</artifactId>
+			<version>${hibernate.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-entitymanager</artifactId>
+			<version>${hibernate.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-c3p0</artifactId>
+			<version>${hibernate.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-ehcache</artifactId>
+			<version>${hibernate.version}</version>
+			<!-- 排除依赖的jar -->
+			<!-- <exclusions> -->
+			<!-- <exclusion> -->
+			<!-- <groupId>org.slf4j</groupId> -->
+			<!-- <artifactId>slf4j-api</artifactId> -->
+			<!-- </exclusion> -->
+			<!-- </exclusions> -->
+		</dependency>
+		<!-- slf4j -->
+		<!-- <dependency> -->
+		<!-- <groupId>org.slf4j</groupId> -->
+		<!-- <artifactId>slf4j-jdk14</artifactId> -->
+		<!-- <version>${slf4j.version}</version> -->
+		<!-- </dependency> -->
+		<!-- mysql -->
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>${mysql.version}</version>
+		</dependency>
+		<!-- log4j -->
+		<!-- <dependency> -->
+		<!-- <groupId>log4j</groupId> -->
+		<!-- <artifactId>log4j</artifactId> -->
+		<!-- <version>${log4j.version}</version> -->
+		<!-- </dependency> -->
+		<!-- mail -->
+		<dependency>
+			<groupId>javax.mail</groupId>
+			<artifactId>mail</artifactId>
+			<version>${mail.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context-support</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+
+		<!-- json-lib -->
+		<dependency>
+			<groupId>net.sf.json-lib</groupId>
+			<artifactId>json-lib</artifactId>
+			<version>${json.version}</version>
+			<!-- 指定jar包jdk版本的依赖 -->
+			<classifier>jdk15</classifier>
+			<exclusions>
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+
+
+		<!-- 把log4j 1.2的日志输出覆盖掉，改为slf4j，需要排除掉log4j的jar依赖 -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>log4j-over-slf4j</artifactId>
+			<version>1.7.22</version>
+		</dependency>
+		<!-- 把JUL(Java Util Logging)的日志输出，桥接到slf4j -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jul-to-slf4j</artifactId>
+			<version>1.7.22</version>
+		</dependency>
+		<!-- 桥接：告诉Slf4j使用Log4j2，此时会把log4j2-api依赖进来，它需要有实现 -->
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-slf4j-impl</artifactId>
+			<version>2.7</version>
+		</dependency>
+		<!-- 增加 log4j 2 的核心库，此时需要在src/main/resources里面增加一个log4j2.xml文件进行配置 -->
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+			<version>2.7</version>
+		</dependency>
+		<!-- 加入流程引擎相关的依赖 -->
+		<dependency>
+			<groupId>org.activiti</groupId>
+			<artifactId>activiti-spring</artifactId>
+			<version>5.22.0</version>
+		</dependency>
+		<!-- Activiti依赖进来的jackson版本略低，所以会跟Spring MVC冲突，比如某个类找不到。 -->
+		<!-- 主动增加高版本的jackson依赖可以解决此冲突。 -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.9.6</version>
+		</dependency>
+		<!-- 基于JVM的一种脚本语言，可以调用Java代码，JDK的所有API它都可以使用 -->
+		<!-- 语法比Java要简单，不需要分号、换行以后就是下一句代码，写了分号也不会错 -->
+		<dependency>
+			<groupId>org.codehaus.groovy</groupId>
+			<artifactId>groovy-all</artifactId>
+			<version>2.4.10</version>
+		</dependency>
+
+	</dependencies>
+
+	<!-- 项目构建部分 -->
+	<build>
+		<!-- 打成war的最终名 -->
+		<finalName>${project.artifactId}</finalName>
+		<!-- 指定java源代码存放的目录: -->
+		<sourceDirectory>${basedir}/src/main/java</sourceDirectory>
+		<!-- 指定资源文件存放的目录 -->
+		<resources>
+			<resource>
+				<directory>${basedir}/src/main/resources</directory>
+			</resource>
+		</resources>
+		<!-- 指定测试源代码存放的目录 -->
+		<testSourceDirectory>${basedir}/src/test/java</testSourceDirectory>
+		<!-- 指定测试资源文件存放的目录 -->
+		<testResources>
+			<testResource>
+				<directory>${basedir}/src/test/resources</directory>
+			</testResource>
+		</testResources>
+
+		<!-- 配置插件 -->
+		<plugins>
+			<!-- 编译插件 -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.8.0</version>
+				<configuration>
+					<source>10</source>
+					<target>10</target>
+					<encoding>utf-8</encoding>
+				</configuration>
+			</plugin>
+			<!-- web容器插件 -->
+			<plugin>
+				<groupId>org.apache.tomcat.maven</groupId>
+				<artifactId>tomcat7-maven-plugin</artifactId>
+				<version>2.2</version>
+				<configuration>
+					<!-- 端口号 -->
+					<port>8080</port>
+					<!-- 支持热部署 -->
+					<contextReloadable>true</contextReloadable>
+					<uriEncoding>utf-8</uriEncoding>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>

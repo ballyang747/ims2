@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration status="ERROR">
+	<appenders>
+		<!-- 配置一个Console的输出目标，name是用来给ref使用的 -->
+		<Console name="Console" target="SYSTEM_OUT">
+			<!-- 日志输出的格式 -->
+			<!-- %-5level 表示左对齐的5个字符的日志级别，比如debug、info等 -->
+			<!-- %d{yyyy-MM-dd HH:mm:ss.SSS} 精确到毫秒的日志记录时间 -->
+			<!-- %t 日志输出的线程 -->
+			<!-- %logger{36} 最长36个字符的日志记录器的名称，通常就是类名，如果太长会自动把包名简写 -->
+			<!-- %msg 日志内容的主体 -->
+			<!-- %n 换行 -->
+			<PatternLayout
+				pattern="[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %logger{36} - %msg%n" />
+		</Console>
+	</appenders>
+	<loggers>
+		<!-- additivity是否叠加到root日志记录器，false表示不叠加 -->
+		<logger name="org.kingson" level="debug" additivity="false">
+			<appender-ref ref="Console" />
+		</logger>
+		<logger name="org.springframework" level="error"/>
+		<logger name="org.activiti" level="error" />
+		<!-- Hibernate的showSql属性不受这个日志记录器控制，那是直接打印的 -->
+		<logger name="org.hibernate" level="error" />
+
+		<!-- root日志记录器 -->
+		<root level="error">
+			<appender-ref ref="Console" />
+		</root>
+	</loggers>
+</configuration>
